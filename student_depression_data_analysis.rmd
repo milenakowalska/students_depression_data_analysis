@@ -1,0 +1,22 @@
+---
+title: "Student Depression Data Analysis Project"
+output:
+  pdf_document: default
+  html_document: default
+date: "2025-10-29"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Loading data and initial data exploration
+
+```{r}
+df <- read.csv("./dataset/student_depression_dataset.csv")
+```
+
+```{r}
+head(df)
+```
+
