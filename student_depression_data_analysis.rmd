@@ -8,7 +8,20 @@ date: "2025-10-29"
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(data.table)
+library(tidyverse)
+library(ggplot2)
 ```
+
+# Research questions:
+1. Is there a correlation between the cumulative grade point average of the student and depression?
+2. Which personal, academic, and lifestyle factors are associated with depression among students?
+3. Is age associated with depression?
+4. Is academic pressure associated with depression?
+5. Does study satisfaction moderate the effect of academic pressure on depression?
+6. Are students with higher work/study hours more likely to experience depression?
+7. Do dietary habits (e.g., healthy vs unhealthy) relate to depression?
+8. Does financial stress correlate with depression?
 
 # Loading data and initial data exploration
 
@@ -19,4 +32,134 @@ df <- read.csv("./dataset/student_depression_dataset.csv")
 ```{r}
 head(df)
 ```
+```{r}
+names(df)
+```
 
+The data set consists of 27901 observations and 18 features
+```{r}
+dim(df)
+```
+
+```{r}
+unique(df$Profession)
+```
+
+Convert to data.table
+```{r}
+dt <- as.data.table(df)
+```
+
+```{r}
+dt[Profession != "Student"]
+```
+Count observations by profession
+```{r}
+dt[, .N, by="Profession"]
+```
+Count observations by city
+There are observations of students from 52 cities.
+```{r}
+dt[, .N, by="City"][order(-N)]
+```
+Explore categories of "Sleep.Duration"
+```{r}
+unique(dt$Sleep.Duration)
+```
+Explore categories of "Dietary.Habits"
+```{r}
+unique(dt$Dietary.Habits)
+```
+Explore categories of "Degree"
+```{r}
+unique(dt$Degree)
+```
+Categories of "Have.you.ever.had.suicidal.thoughts.."
+```{r}
+unique(dt$Have.you.ever.had.suicidal.thoughts..)
+```
+Categories of "Financial.Stress"
+```{r}
+unique(dt$Financial.Stress)
+```
+Categories of "Family.History.of.Mental.Illness"
+```{r}
+unique(dt$Family.History.of.Mental.Illness)
+```
+Distribution of age
+```{r}
+ggplot(dt, aes(x = Age)) +
+  geom_histogram(fill="pink", color="grey") + 
+  ylab("Number of students") + 
+  xlab("Age") + 
+  ggtitle("Distribution of Participant Ages")
+```
+```{r}
+ggplot(dt, aes(x = Gender)) +
+  geom_bar(fill="lightblue", color="grey") + 
+  ylab("Number of students") + 
+  xlab("") +
+  ggtitle("Distribution of gender among participants")
+```
+```{r}
+ggplot(dt, aes(x = factor(Depression, levels=c(0, 1), labels=c("No", "Yes")))) +
+  geom_bar(fill="lightgreen", color="grey") + 
+  ylab("Number of students") + 
+  xlab("") +
+  ggtitle("Distribution of depressive vs. non-depressive participants")
+```
+
+```{r}
+ggplot(dt, aes(x = Have.you.ever.had.suicidal.thoughts..)) +
+  geom_bar(fill="lightblue", color="grey") + 
+  ylab("Number of students") + 
+  xlab("") +
+  ggtitle("Distribution of students with/without suicidal thoughts")
+```
+# Data preprocessing
+```{r}
+head(dt)
+```
+Select variables of interest
+```{r}
+dt <- dt[, .(id, Gender, Academic.Pressure, CGPA, Study.Satisfaction, Sleep.Duration, Dietary.Habits, Have.you.ever.had.suicidal.thoughts.., Work.Study.Hours, Financial.Stress, Family.History.of.Mental.Illness, Depression)]
+```
+
+```{r}
+dt$Gender <- as.factor(dt$Gender)
+dt$Sleep.Duration <- as.factor(dt$Sleep.Duration)
+dt$Dietary.Habits <- as.factor(dt$Dietary.Habits)
+dt$Have.you.ever.had.suicidal.thoughts.. <- as.factor(dt$Have.you.ever.had.suicidal.thoughts..)
+dt$Financial.Stress <- as.numeric(dt$Financial.Stress)
+dt$Family.History.of.Mental.Illness <- as.factor(dt$Family.History.of.Mental.Illness)
+```
+
+```{r}
+setnames(dt, old="Family.History.of.Mental.Illness", new="Family.Mental.Illness")
+setnames(dt, old="Have.you.ever.had.suicidal.thoughts..", new="Suicidal.thoughts")
+```
+
+```{r}
+head(dt)
+```
+Check for missing values
+```{r}
+colSums(is.na(df))
+```
+```{r}
+str(dt)
+```
+```{r}
+summary(dt)
+```
+# Answer research questions
+
+Examine correlation between numeric variables
+
+There is a significant positive correlation between academic pressure and depression (0.47).
+There is a significant negative correlation between age and depression (-0.22).
+```{r}
+cols <- sapply(dt, is.numeric)
+cor(dt[, ..cols], use = "complete.obs")
+```
+# Summary
