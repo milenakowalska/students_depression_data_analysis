@@ -15,13 +15,11 @@ library(ggplot2)
 
 # Research questions:
 1. Is there a correlation between the cumulative grade point average of the student and depression?
-2. Which personal, academic, and lifestyle factors are associated with depression among students?
-3. Is age associated with depression?
-4. Is academic pressure associated with depression?
-5. Does study satisfaction moderate the effect of academic pressure on depression?
-6. Are students with higher work/study hours more likely to experience depression?
-7. Do dietary habits (e.g., healthy vs unhealthy) relate to depression?
-8. Does financial stress correlate with depression?
+2. Is age associated with depression?
+3. Is academic pressure associated with depression?
+4. Are students with higher work/study hours more likely to experience depression?
+5. Do dietary habits (e.g., healthy vs unhealthy) relate to depression?
+6. Does financial stress correlate with depression?
 
 # Loading data and initial data exploration
 
@@ -120,18 +118,26 @@ ggplot(dt, aes(x = Have.you.ever.had.suicidal.thoughts..)) +
 ```{r}
 head(dt)
 ```
+
 Select variables of interest
 ```{r}
-dt <- dt[, .(id, Gender, Academic.Pressure, CGPA, Study.Satisfaction, Sleep.Duration, Dietary.Habits, Have.you.ever.had.suicidal.thoughts.., Work.Study.Hours, Financial.Stress, Family.History.of.Mental.Illness, Depression)]
+dt <- dt[, .(id, Age, Gender, Academic.Pressure, CGPA, Study.Satisfaction, Sleep.Duration, Dietary.Habits, Have.you.ever.had.suicidal.thoughts.., Work.Study.Hours, Financial.Stress, Family.History.of.Mental.Illness, Depression)]
+```
+
+Map boolean values to numerical
+```{r}
+dt[, Have.you.ever.had.suicidal.thoughts.. := ifelse(Have.you.ever.had.suicidal.thoughts.. == "Yes", 1L, 0L)]
+```
+
+```{r}
+dt[, Family.History.of.Mental.Illness := ifelse(Family.History.of.Mental.Illness == "Yes", 1L, 0L)]
 ```
 
 ```{r}
 dt$Gender <- as.factor(dt$Gender)
 dt$Sleep.Duration <- as.factor(dt$Sleep.Duration)
 dt$Dietary.Habits <- as.factor(dt$Dietary.Habits)
-dt$Have.you.ever.had.suicidal.thoughts.. <- as.factor(dt$Have.you.ever.had.suicidal.thoughts..)
 dt$Financial.Stress <- as.numeric(dt$Financial.Stress)
-dt$Family.History.of.Mental.Illness <- as.factor(dt$Family.History.of.Mental.Illness)
 ```
 
 ```{r}
@@ -142,6 +148,8 @@ setnames(dt, old="Have.you.ever.had.suicidal.thoughts..", new="Suicidal.thoughts
 ```{r}
 head(dt)
 ```
+
+
 Check for missing values
 ```{r}
 colSums(is.na(df))
@@ -154,12 +162,129 @@ summary(dt)
 ```
 # Answer research questions
 
-Examine correlation between numeric variables
+## Is there a correlation between the cumulative grade point average of the student and depression?
 
-There is a significant positive correlation between academic pressure and depression (0.47).
-There is a significant negative correlation between age and depression (-0.22).
+The following analysis illustrates that there is no statistically significant correlation between those two features.
+
 ```{r}
-cols <- sapply(dt, is.numeric)
-cor(dt[, ..cols], use = "complete.obs")
+cor(dt$CGPA, dt$Depression)
 ```
+```{r}
+ggplot(dt, aes(x=factor(Depression), y=CGPA, fill=Depression)) + 
+  geom_boxplot(alpha=0.7) + 
+  labs(
+    title="Correlation between the cumulative grade point average and depression",
+    x="Depression",
+    y="CGPA"
+  )
+```
+
+## Is age associated with depression?
+
+There is a significant negative correlation between age and depression (-0.22), indicating that younger participants are slightly more likely to experience depression.
+
+```{r}
+cor(dt$Age, dt$Depression)
+```
+
+```{r}
+ggplot(dt, aes(x=factor(Depression), y=Age, fill=Depression)) + 
+  geom_boxplot(alpha=0.7) + 
+  labs(
+    title="Correlation between age and depression",
+    x="Depression",
+    y="Age"
+  )
+```
+
+## Is academic pressure associated with depression?
+
+There is a very strong correlation between academic pressure and depression (0.47), indicating that students experiencing academic pressure are more likely to experience depression.
+
+```{r}
+cor(dt$Academic.Pressure, dt$Depression)
+```
+
+```{r}
+ggplot(dt, aes(x=factor(Depression), y=Academic.Pressure, fill=Depression)) + 
+  geom_boxplot(alpha=0.7) + 
+  labs(
+    title="Correlation between academic pressure and depression",
+    x="Depression",
+    y="Academic Pressure"
+  )
+```
+
+## Are students with higher work/study hours more likely to experience depression?
+
+There is a correlation between work/study hours and depression (0.21), indicating that students working and studying more are more likely to experience depression.
+
+```{r}
+cor(dt$Work.Study.Hours, dt$Depression)
+```
+
+```{r}
+ggplot(dt, aes(x=factor(Depression), y=Work.Study.Hours, fill=Depression)) + 
+  geom_boxplot(alpha=0.7) + 
+  labs(
+    title="Correlation between work/study hours and depression",
+    x="Depression",
+    y="Work/Study hours"
+  )
+```
+
+## Do dietary habits (e.g., healthy vs unhealthy) relate to depression?
+
+The ANOVA results indicate a significant relationship between dietary habits and depression (p <2e-16). The results are illustrated in the bar plot below.
+
+Perform ANOVA-test to examine the correlation
+```{r}
+anova_result <- aov(as.numeric(Depression) ~ as.factor(Dietary.Habits), data = dt)
+```
+
+```{r}
+summary(anova_result)
+```
+
+```{r}
+ggplot(dt, aes(x=Dietary.Habits, fill=as.factor(Depression))) + 
+  geom_bar(position = "stack") + 
+  labs(
+    title="Correlation between dietary habits and depression",
+    x="Depression",
+    y="Dietary habits",
+    fill="Depression"
+  )
+```
+
+
+## Does financial stress correlate with depression?
+
+There is a correlation between financial stress and depression (0.36), indicating that students experiencing financial stress are more likely to experience depression.
+
+```{r}
+cor(as.numeric(dt$Financial.Stress), as.numeric(dt$Depression))
+```
+remove NA values
+```{r}
+dt <- dt[!is.na(Financial.Stress)]
+```
+
+```{r}
+cor(as.numeric(dt$Financial.Stress), as.numeric(dt$Depression))
+```
+
+```{r}
+ggplot(dt, aes(x=factor(Depression), y=Financial.Stress, fill=Depression)) + 
+  geom_boxplot(alpha=0.7) + 
+  labs(
+    title="Correlation between financial stress and depression",
+    x="Depression",
+    y="Financial stress"
+  )
+```
+
 # Summary
+The analysis showed that age, academic and financial pressure, work/study hours, and dietary habits are significantly associated with depression. 
+No significant correlation was found between CGPA and depression.
+
