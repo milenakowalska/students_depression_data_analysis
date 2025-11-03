@@ -1,7 +1,6 @@
 ---
 title: "Student Depression Data Analysis Project"
 output:
-  pdf_document: default
   html_document: default
 date: "2025-10-29"
 ---
@@ -11,6 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(data.table)
 library(tidyverse)
 library(ggplot2)
+library(plotly)
 ```
 
 # Research questions:
@@ -86,33 +86,41 @@ unique(dt$Family.History.of.Mental.Illness)
 ```
 Distribution of age
 ```{r}
-ggplot(dt, aes(x = Age)) +
+p <- ggplot(dt, aes(x = Age)) +
   geom_histogram(fill="pink", color="grey") + 
   ylab("Number of students") + 
   xlab("Age") + 
   ggtitle("Distribution of Participant Ages")
+
+ggplotly(p)
 ```
 ```{r}
-ggplot(dt, aes(x = Gender)) +
+p <- ggplot(dt, aes(x = Gender)) +
   geom_bar(fill="lightblue", color="grey") + 
   ylab("Number of students") + 
   xlab("") +
   ggtitle("Distribution of gender among participants")
+
+ggplotly(p)
 ```
 ```{r}
-ggplot(dt, aes(x = factor(Depression, levels=c(0, 1), labels=c("No", "Yes")))) +
+p <- ggplot(dt, aes(x = factor(Depression, levels=c(0, 1), labels=c("No", "Yes")))) +
   geom_bar(fill="lightgreen", color="grey") + 
   ylab("Number of students") + 
   xlab("") +
   ggtitle("Distribution of depressive vs. non-depressive participants")
+
+ggplotly(p)
 ```
 
 ```{r}
-ggplot(dt, aes(x = Have.you.ever.had.suicidal.thoughts..)) +
+p <- ggplot(dt, aes(x = Have.you.ever.had.suicidal.thoughts..)) +
   geom_bar(fill="lightblue", color="grey") + 
   ylab("Number of students") + 
   xlab("") +
   ggtitle("Distribution of students with/without suicidal thoughts")
+
+ggplotly(p)
 ```
 # Data preprocessing
 ```{r}
@@ -170,13 +178,15 @@ The following analysis illustrates that there is no statistically significant co
 cor(dt$CGPA, dt$Depression)
 ```
 ```{r}
-ggplot(dt, aes(x=factor(Depression), y=CGPA, fill=Depression)) + 
+p <- ggplot(dt, aes(x=factor(Depression), y=CGPA, fill=Depression)) + 
   geom_boxplot(alpha=0.7) + 
   labs(
     title="Correlation between the cumulative grade point average and depression",
     x="Depression",
     y="CGPA"
   )
+
+ggplotly(p)
 ```
 
 ## Is age associated with depression?
@@ -188,13 +198,15 @@ cor(dt$Age, dt$Depression)
 ```
 
 ```{r}
-ggplot(dt, aes(x=factor(Depression), y=Age, fill=Depression)) + 
+p <- ggplot(dt, aes(x=factor(Depression), y=Age, fill=Depression)) + 
   geom_boxplot(alpha=0.7) + 
   labs(
     title="Correlation between age and depression",
     x="Depression",
     y="Age"
   )
+
+ggplotly(p)
 ```
 
 ## Is academic pressure associated with depression?
@@ -206,13 +218,15 @@ cor(dt$Academic.Pressure, dt$Depression)
 ```
 
 ```{r}
-ggplot(dt, aes(x=factor(Depression), y=Academic.Pressure, fill=Depression)) + 
+p <- ggplot(dt, aes(x=factor(Depression), y=Academic.Pressure, fill=Depression)) + 
   geom_boxplot(alpha=0.7) + 
   labs(
     title="Correlation between academic pressure and depression",
     x="Depression",
     y="Academic Pressure"
   )
+
+ggplotly(p)
 ```
 
 ## Are students with higher work/study hours more likely to experience depression?
@@ -224,13 +238,15 @@ cor(dt$Work.Study.Hours, dt$Depression)
 ```
 
 ```{r}
-ggplot(dt, aes(x=factor(Depression), y=Work.Study.Hours, fill=Depression)) + 
+p <- ggplot(dt, aes(x=factor(Depression), y=Work.Study.Hours, fill=Depression)) + 
   geom_boxplot(alpha=0.7) + 
   labs(
     title="Correlation between work/study hours and depression",
     x="Depression",
     y="Work/Study hours"
   )
+
+ggplotly(p)
 ```
 
 ## Do dietary habits (e.g., healthy vs unhealthy) relate to depression?
@@ -247,7 +263,7 @@ summary(anova_result)
 ```
 
 ```{r}
-ggplot(dt, aes(x=Dietary.Habits, fill=as.factor(Depression))) + 
+p <- ggplot(dt, aes(x=Dietary.Habits, fill=as.factor(Depression))) + 
   geom_bar(position = "stack") + 
   labs(
     title="Correlation between dietary habits and depression",
@@ -255,6 +271,8 @@ ggplot(dt, aes(x=Dietary.Habits, fill=as.factor(Depression))) +
     y="Dietary habits",
     fill="Depression"
   )
+
+ggplotly(p)
 ```
 
 
@@ -275,13 +293,15 @@ cor(as.numeric(dt$Financial.Stress), as.numeric(dt$Depression))
 ```
 
 ```{r}
-ggplot(dt, aes(x=factor(Depression), y=Financial.Stress, fill=Depression)) + 
+p <- ggplot(dt, aes(x=factor(Depression), y=Financial.Stress, fill=Depression)) + 
   geom_boxplot(alpha=0.7) + 
   labs(
     title="Correlation between financial stress and depression",
     x="Depression",
     y="Financial stress"
   )
+
+ggplotly(p)
 ```
 
 # Summary
